@@ -30,10 +30,11 @@ jobs:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-
     steps:
     - uses: actions/checkout@v4
-    
+      with:
+        submodules: recursive
+        
     - name: Install gtkmm-3.0 dependencies
       if: runner.os == 'Linux'
       run: |
