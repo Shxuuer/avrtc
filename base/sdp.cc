@@ -381,6 +381,7 @@ SDPHandler::SDPHandler(const std::string& sdp_string) {
         } else if (segment[0] == 't') {
             t = segment.substr(2);
         } else if (segment[0] == 'm') {
+            // 处理 m= 行及其后续的 a= 行
             std::string media_block = segment + '\n';
             std::getline(ss, segment, '\n');
             while (segment[0] == 'a') {
@@ -391,7 +392,12 @@ SDPHandler::SDPHandler(const std::string& sdp_string) {
             ss.seekg(-static_cast<int>(segment.size()) - 1, std::ios_base::cur);
             m.push_back(SDPMediaDescription(media_block));
         } else if (segment[0] == 'z') {
-            z += segment + "\n";
+            // 处理 z= 行
+            std::stringstream zss(segment.substr(2));
+            std::string zitem;
+            while (std::getline(zss, zitem, ' ')) {
+                z.push_back(zitem);
+            }
         } else {
             break;
         }
@@ -411,7 +417,13 @@ std::string SDPHandler::ToString() const {
     for (auto& desc : m) {
         ret.append(desc.ToString());
     }
-    ret.append(z);
+    if (z.size() != 0) {
+        ret.append("z=");
+        for (auto& zitem : z)
+            ret.append(zitem + " ");
+        ret.pop_back();
+        ret.append("\n");
+    }
     return ret;
 }
 

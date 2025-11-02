@@ -59,6 +59,16 @@ class SocketAddress {
   sa_family_t GetFamily() const { return address_.sin_family; }
   in_addr_t GetIP() const { return address_.sin_addr.s_addr; }
 
+  void SetPort(uint16_t port) { address_.sin_port = htons(port); }
+  void SetIP(in_addr_t ip) { address_.sin_addr.s_addr = ip; }
+  void SetIP(const char* ip_str) {
+    inet_pton(address_.sin_family, ip_str, &address_.sin_addr);
+  }
+  void SetIP(std::string ip_str) {
+    inet_pton(address_.sin_family, ip_str.c_str(), &address_.sin_addr);
+  }
+  void SetFamily(sa_family_t family) { address_.sin_family = family; }
+
  private:
   struct sockaddr_in address_{};
 };
@@ -75,8 +85,9 @@ class Socket {
   int GetFD() const { return socket_fd_; }
   void SetFD(int fd) { socket_fd_ = fd; }
 
- protected:
   SocketAddress address_;
+
+ protected:
   int socket_fd_ = -1;
 };
 
@@ -112,12 +123,15 @@ class SessionSocket : public Socket,
 class ClientSocket : public SessionSocket {
  public:
   using SessionSocket::SessionSocket;
+  using OnConnectedCallback = std::function<void()>;
+  void SetOnConnected(OnConnectedCallback cb) { OnConnected_ = cb; }
 
   void Connect();
   void Stop();
 
  private:
   bool running_ = true;
+  OnConnectedCallback OnConnected_;
 };
 
 // 服务器Socket，支持接受客户端连接

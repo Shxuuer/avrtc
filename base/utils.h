@@ -30,8 +30,5 @@ std::string GetClientName();
 
 std::string GetCurrentIP();
 
-using MessageMap = std::unordered_map<std::string, std::vector<std::string>>;
-MessageMap ParseMessage(const std::string& msg);
-
 }  // namespace avrtc
 #endif  // BASE_UTILS_H_

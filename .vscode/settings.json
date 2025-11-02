@@ -94,6 +94,8 @@
     "__memory": "cpp",
     "locale": "cpp",
     "csetjmp": "cpp",
-    "regex": "cpp"
+    "regex": "cpp",
+    "coroutine": "cpp",
+    "source_location": "cpp"
   }
 }

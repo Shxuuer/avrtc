@@ -52,26 +52,4 @@ std::string GetCurrentIP() {
     freeifaddrs(ifaddr);
     return ip_address;
 }
-
-MessageMap ParseMessage(const std::string& msg) {
-    MessageMap result;
-    std::istringstream stream(msg);
-    std::string line;
-    while (std::getline(stream, line)) {
-        size_t delimiter_pos = line.find(':');
-        if (delimiter_pos != std::string::npos) {
-            std::string key = line.substr(0, delimiter_pos);
-            std::string values_str = line.substr(delimiter_pos + 1);
-            std::vector<std::string> values;
-            std::istringstream values_stream(values_str);
-            std::string value;
-            while (std::getline(values_stream, value, ',')) {
-                values.push_back(value);
-            }
-            result[key] = values;
-        }
-    }
-    return result;
-}
-
 }  // namespace avrtc

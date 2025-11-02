@@ -4,22 +4,28 @@ ClientUI::ClientUI() : Gtk::Window() {
     set_default_size(800, 500);
     set_title("Client Window");
     add(m_Stack_);
-    m_Stack_.set_transition_type(
-        Gtk::StackTransitionType::STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
-    m_Stack_.add(clientInputServerInfoPage, "client_input_info_page",
-                 "Client Input Info");
-    m_Stack_.add(clientShowVideoPage, "client_show_video_page",
-                 "Client Show Video");
-    m_Stack_.set_visible_child("client_input_info_page");
-    Show();
+    socket_thread_ = std::make_shared<avrtc::Thread>();
 }
 
-void ClientUI::Show() {
+void ClientUI::SetClient(std::shared_ptr<AvrtcClient> client) {
+    client_ = client;
+
+    clientInputServerInfoPage =
+        std::make_shared<ClientInputServerInfoPage>(&m_Stack_, this);
+    clientShowVideoPage = std::make_shared<ClientShowVideoPage>();
+
+    m_Stack_.add(*clientInputServerInfoPage, "client_input_server_info_page");
+    m_Stack_.add(*clientShowVideoPage, "client_show_video_page");
+
+    m_Stack_.set_visible_child("client_input_server_info_page");
     show_all();
 }
 
-ClientInputServerInfoPage::ClientInputServerInfoPage()
-    : Gtk::Box(Gtk::Orientation::ORIENTATION_VERTICAL, 10) {
+ClientInputServerInfoPage::ClientInputServerInfoPage(Gtk::Stack* stack,
+                                                     ClientUI* client_ui_)
+    : Gtk::Box(Gtk::Orientation::ORIENTATION_VERTICAL, 10),
+      stack_(stack),
+      client_ui_(client_ui_) {
     auto label_ip = Gtk::make_managed<Gtk::Label>("Server IP:");
     auto label_port = Gtk::make_managed<Gtk::Label>("Server Port:");
     auto label_client_type = Gtk::make_managed<Gtk::Label>("Client Type:");
@@ -111,10 +117,15 @@ void ClientInputServerInfoPage::OnFileButtonClicked() {
 }
 
 void ClientInputServerInfoPage::OnConnectButtonClicked() {
-    // std::string server_ip = GetServerIP();
-    // uint16_t server_port = GetServerPort();
-    // avrtc::ClientType client_type = GetClientType();
-    // std::string filename = GetFilename();
+    // 更新客户端地址并连接
+    client_ui_->socket_thread_->AddTask([this]() {
+        auto address_ = client_ui_->client_->address_;
+        address_.SetIP(GetServerIP());
+        address_.SetPort(GetServerPort());
+        client_ui_->client_->Connect();
+    });
+
+    // 切换页面
     stack_->set_visible_child("client_show_video_page");
 }
 
@@ -175,19 +186,23 @@ void ServerUI::RemoveClientSection_(Glib::RefPtr<Gtk::ListStore> refListStore,
 }
 
 void ServerUI::AddSender(const std::string& sender_name, int id) {
-    AddClientSection_(sender_refListStore, sender_name, id);
+    PushTask([this, sender_name, id]() {
+        AddClientSection_(sender_refListStore, sender_name, id);
+    });
 }
 
 void ServerUI::RemoveSender(int id) {
-    RemoveClientSection_(sender_refListStore, id);
+    PushTask([this, id]() { RemoveClientSection_(sender_refListStore, id); });
 }
 
 void ServerUI::AddReceiver(const std::string& receiver_name, int id) {
-    AddClientSection_(receiver_refListStore, receiver_name, id);
+    PushTask([this, receiver_name, id]() {
+        AddClientSection_(receiver_refListStore, receiver_name, id);
+    });
 }
 
 void ServerUI::RemoveReceiver(int id) {
-    RemoveClientSection_(receiver_refListStore, id);
+    PushTask([this, id]() { RemoveClientSection_(receiver_refListStore, id); });
 }
 
 void ServerUI::SetSelectedSender(int id) {

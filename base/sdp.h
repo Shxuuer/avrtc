@@ -118,7 +118,7 @@ class SDPHandler {
   std::string s = "-";                                           // session name
   std::string t = "0 0";                                         // timing
   std::vector<SDPMediaDescription> m;  // media descriptions
-  std::string z;                       // other attributes can be added here
+  std::vector<std::string> z;          // other attributes can be added here
 };
 
 }  // namespace avrtc

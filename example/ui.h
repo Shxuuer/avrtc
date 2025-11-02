@@ -20,7 +20,9 @@
 
 #include <iostream>
 
+#include "base/thread.h"
 #include "base/utils.h"
+#include "example/client.h"
 
 class ClientShowVideoPage : public Gtk::Box {
  public:
@@ -34,10 +36,8 @@ class ClientShowVideoPage : public Gtk::Box {
 
 class ClientInputServerInfoPage : public Gtk::Box {
  public:
-  ClientInputServerInfoPage();
-  ClientInputServerInfoPage(Gtk::Stack* stack) : ClientInputServerInfoPage() {
-    stack_ = stack;
-  }
+  ClientInputServerInfoPage() = delete;
+  ClientInputServerInfoPage(Gtk::Stack* stack, ClientUI* client_ui_);
   ~ClientInputServerInfoPage() = default;
 
   std::string GetServerIP();
@@ -59,6 +59,9 @@ class ClientInputServerInfoPage : public Gtk::Box {
   Gtk::Box file_chooser_;
   Gtk::Button button_choose_file_;
   Gtk::Label label_chosen_file_;
+
+  std::shared_ptr<AvrtcClient> client_;
+  ClientUI* client_ui_;
 };
 
 class ClientUI : public Gtk::Window {
@@ -66,12 +69,16 @@ class ClientUI : public Gtk::Window {
   ClientUI();
   ~ClientUI() = default;
 
-  void Show();
+  void SetClient(std::shared_ptr<AvrtcClient> client);
 
  private:
   Gtk::Stack m_Stack_;
-  ClientInputServerInfoPage clientInputServerInfoPage;
-  ClientShowVideoPage clientShowVideoPage;
+  std::shared_ptr<ClientInputServerInfoPage> clientInputServerInfoPage;
+  std::shared_ptr<ClientShowVideoPage> clientShowVideoPage;
+
+ public:
+  std::shared_ptr<AvrtcClient> client_;
+  std::shared_ptr<avrtc::Thread> socket_thread_;
 };
 
 class ModelColumns : public Gtk::TreeModel::ColumnRecord {

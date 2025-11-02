@@ -243,6 +243,10 @@ void ClientSocket::Connect() {
         LOG(ERROR) << "Failed to connect to server";
     }
 
+    if (OnConnected_) {
+        OnConnected_();
+    }
+
     while (running_)
         Recv();
 }
