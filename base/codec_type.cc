@@ -3,6 +3,8 @@
 namespace avrtc {
 std::string CodecTypeToString(CodecType type) {
     switch (type) {
+        case CodecType::MUTE:
+            return "MUTE";
         case CodecType::VP8:
             return "VP8";
         case CodecType::VP9:
