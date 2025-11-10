@@ -139,7 +139,7 @@ TEST(SDPHandlerTest, Negotiation) {
     auto remote_media_description_audio = avrtc::SDPMediaDescription(
         avrtc::MediaType::AUDIO, 5003, avrtc::MediaProtocol::RTP_AVP,
         avrtc::MediaDirection::SENDRECV);
-    remote_media_description_audio.AddFormat(avrtc::CodecType::Opus, 48000);
+    remote_media_description_audio.AddFormat(avrtc::CodecType::OPUS, 48000);
     remote_sdp_handler->m.push_back(remote_media_description_audio);
     EXPECT_FALSE(local_sdp_handler->SDPNegotiation(*remote_sdp_handler));
 

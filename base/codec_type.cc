@@ -1,23 +1,31 @@
 #include "base/codec_type.h"
 
 namespace avrtc {
+
 std::string CodecTypeToString(CodecType type) {
-    switch (type) {
-        case CodecType::MUTE:
-            return "MUTE";
-        case CodecType::VP8:
-            return "VP8";
-        case CodecType::VP9:
-            return "VP9";
-        case CodecType::H264:
-            return "H264";
-        case CodecType::H265:
-            return "H265";
-        case CodecType::Opus:
-            return "Opus";
-        default:
-            LOG(FATAL) << "Unkown Codec.";
+    auto it = codec_type_to_string.find(type);
+    if (it != codec_type_to_string.end()) {
+        return it->second;
     }
     return "";
 }
+
+CodecType StringToCodecType(const std::string& str) {
+    auto it = string_to_codec_type.find(str);
+    if (it != string_to_codec_type.end()) {
+        return it->second;
+    }
+    LOG(ERROR) << "StringToCodecType: Invalid codec type string: " << str;
+    return CodecType::MUTE;  // Default to MUTE on error
 }
+
+AVCodecID CodecTypeToFFmpegCodecID(CodecType type) {
+    auto it = codec_type_to_ffmpeg_id.find(type);
+    if (it != codec_type_to_ffmpeg_id.end()) {
+        return it->second;
+    }
+    LOG(ERROR) << "CodecTypeToFFmpegCodecID: Invalid codec type.";
+    return AV_CODEC_ID_NONE;  // Default to NONE on error
+}
+
+}  // namespace avrtc

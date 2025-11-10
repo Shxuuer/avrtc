@@ -12,6 +12,7 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
+pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil)
 
 add_subdirectory(third_party/googletest)
 add_subdirectory(third_party/glog)
@@ -25,11 +26,11 @@ function(add_avrtc_target TARGET_NAME MAIN_SRCS)
     )
     target_link_libraries(${TARGET_NAME}
         PRIVATE
-            glog ${GTKMM_LIBRARIES}
+            glog ${GTKMM_LIBRARIES} ${FFMPEG_LIBRARIES}
     )
     target_include_directories(${TARGET_NAME}
         PRIVATE
-            . ${GTKMM_INCLUDE_DIRS}
+            . ${GTKMM_INCLUDE_DIRS} ${FFMPEG_INCLUDE_DIRS}
     )
 endfunction()
 
@@ -56,11 +57,11 @@ function(add_single_test_target TEST_FILE)
     )
     target_link_libraries(${TARGET_NAME}
         PRIVATE
-            gtest gtest_main glog ${GTKMM_LIBRARIES}
+            gtest gtest_main glog ${GTKMM_LIBRARIES} ${FFMPEG_LIBRARIES}
     )
     target_include_directories(${TARGET_NAME}
         PRIVATE
-            . ${GTKMM_INCLUDE_DIRS}
+            . ${GTKMM_INCLUDE_DIRS} ${FFMPEG_INCLUDE_DIRS}
     )
     gtest_discover_tests(${TARGET_NAME})
 endfunction()
@@ -69,3 +70,6 @@ file(GLOB TEST_SRCS "tests/*.cc")
 foreach(TEST_SRC_FILE IN LISTS TEST_SRCS)
     add_single_test_target(${TEST_SRC_FILE})
 endforeach()
+
+# 复制文件
+file(COPY tests/test_data/oceans.mp4 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data)
